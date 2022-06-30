@@ -55,7 +55,7 @@ for i in range(1, NAMES.__len__()):
 
     # 其他情况
     else:
-        pn = PN.split("，|,")
+        pn = PN.split("，")
         for b in pn:
             if b == "":
                 continue
