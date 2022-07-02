@@ -2,7 +2,7 @@
 
 全新的兼容绝大多数情况与新需求的新版本
  
-开发者：Leonard\n
+开发者：Leonard        
        Lrj
 
 环境：python 3.0+
