@@ -2,6 +2,8 @@ import os
 import docx
 import xlrd
 from docx import Document
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import Cm
 
 print("错题集生成器", end='\n')
 print("作者：Leonard", end='\n')
@@ -31,6 +33,14 @@ for i in range(1, NAMES.__len__()):
         os.mkdir(path + "学生\\" + sheet.cell_value(i, 0) + "\\" + subject + "\\")
     if not os.path.exists(stupath):
         doc = docx.Document()
+        h=doc.sections[0].header
+        h.paragraphs[0].text = "天任教育    A4    "+sheet.cell_value(i, 0)+"    "+subject+"    第"+weeknumber+"周"
+        p=h.paragraphs[0]
+        p.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
+        doc.sections[0].top_margin = Cm(1.27)
+        doc.sections[0].bottom_margin = Cm(1.27)
+        doc.sections[0].left_margin = Cm(1.27)
+        doc.sections[0].right_margin = Cm(1.27)
         doc.save(stupath)
 
     ctdoc.append(Document(stupath))
@@ -42,16 +52,18 @@ for i in range(1, NAMES.__len__()):
     # 没带的话
     if (PN == "未带") or (PN == "未交"):
         for root, dirs, files in os.walk(jyfoldername, topdown=False):
-            for f in files:
-                ctdoc[i].add_picture(jyfoldername + f)  # 直接操作
+             for f in files:
+                 ctdoc[i].add_picture(jyfoldername + f)  # 直接操作
 
         print(sheet.cell_value(i, 0) + str(date) + "日本科目未带")
-        # ctdoc.add_paragraph("未交")
+         # ctdoc.add_paragraph("未交")
+        pass
 
     # 全对的话
     elif PN == "全对":
         print(sheet.cell_value(i, 0) + str(date) + "日本科目全对")
         ctdoc[i].add_paragraph("全对")
+        pass
 
     # 其他情况
     else:
