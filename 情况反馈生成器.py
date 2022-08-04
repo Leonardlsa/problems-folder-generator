@@ -7,7 +7,7 @@ import xlrd
 
 CT = ".\\错题反馈\\"
 QK = ".\\情况反馈\\"
-blacklist = ['易兆诚', '万铭萱', '王梓洁', '文煜涵', '徐潇瀚', '万铭萱 ', '任惠仪','万铭萱 线','许铭萱','万铭宣','许铭轩']
+blacklist = ['小A']
 for date in os.listdir(CT):
 
     if os.path.isdir(CT + date):                #日期目录
