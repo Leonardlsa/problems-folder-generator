@@ -10,6 +10,7 @@ from docx.shared import Cm
 print("错题集生成器", end='\n')
 print("作者：Leonard", end='\n')
 path = ".\\"
+classes = input("班级名:")
 jyfoldername = path + input("讲义文件夹名:") + '\\'  # 原讲义提取出题目并标括号
 cuotifkbname = input("错题反馈表文件名:") + ".xlsx"
 subject = input("本学科名：")
@@ -37,7 +38,7 @@ for i in range(1, NAMES.__len__()):
         doc.sections[0].right_margin = Cm(1.27)
 
         h = doc.sections[0].header
-        h.paragraphs[0].text = "天任教育    A4    " + sheet.cell_value(i, 0) + "    " + subject + "    第" + weeknumber + "周"
+        h.paragraphs[0].text = classes + "    " + sheet.cell_value(i, 0) + "    " + subject + "    第" + weeknumber + "周"
         p = h.paragraphs[0]
         p.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
@@ -53,7 +54,7 @@ for i in range(1, NAMES.__len__()):
     if (PN == "未带") or (PN == "未交"):
         for root, dirs, files in os.walk(jyfoldername, topdown=False):
             for f in files:
-                ctdoc[i].add_picture(jyfoldername + f)  # 直接操作
+                ctdoc[i].add_picture(jyfoldername + f,width=Cm(18))  # 直接操作
 
         print(sheet.cell_value(i, 0) + str(date) + "日本科目未带")
         # ctdoc.add_paragraph("未交")
@@ -77,7 +78,7 @@ for i in range(1, NAMES.__len__()):
             else:
                 a = str(c)
             try:
-                ctdoc[i].add_picture(jyfoldername + a + '.png')
+                ctdoc[i].add_picture(jyfoldername + a + '.png',width=Cm(18))
             except FileNotFoundError:
                 print("检查你的错题反馈表是否输入了讲义文件夹中没有的题目",end='\n')
                 print(f"应为{0}的第{1}题",sheet.cell_value(i, 0),a,end='\n')
@@ -103,8 +104,8 @@ if not os.path.exists(path + '记录.docx'):
 
 record = Document(path + '记录.docx')
 record.add_heading(date, level=1)
-record.add_paragraph(jyfoldername)
-record.add_paragraph(cuotifkbname)
+record.add_paragraph(jyfoldername+cuotifkbname)
+record.add_paragraph(subject)
 record.add_paragraph("\n")
 record.save(path + '记录.docx')
 
