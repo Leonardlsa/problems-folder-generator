@@ -195,8 +195,9 @@ class Ui_mainWindow(QMainWindow):
         # class_line.setStyleSheet("height: 40px;")
         layout.addRow("班级：", class_line)
 
+        subjects=["数学", "物理", "化学", "生物"]
         subject_line=QComboBox()
-        subject_line.addItems(["数学", "物理", "化学", "生物"])
+        subject_line.addItems(subjects)
         layout.addRow("科目：", subject_line)
 
         date=QLineEdit()
@@ -209,10 +210,19 @@ class Ui_mainWindow(QMainWindow):
         week.setMaxLength(2)
         layout.addRow("周数：", week)
 
+
+        for subject in subjects:
+            if subject in self.feedback_file:
+                subject_line.setCurrentText(subject)
+                self.subject_name = subject
+                break
+
         date_pattern=r'\d{4}'
         match=re.search(date_pattern, self.feedback_file.split("/")[-1])
         if match:
             date.setText(match.group())
+
+
 
         import configparser
         config = configparser.ConfigParser()
