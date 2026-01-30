@@ -13,12 +13,12 @@ jobs:
         include:
           - os: ubuntu-latest
             name: Linux
-            artifact_name: cuotiji-generator
-            asset_name: cuotiji-generator-linux
+            build_name: 错题集生成器-linux
+            final_name: 错题集生成器-linux-x86_64.AppImage
           - os: windows-latest
             name: Windows
-            artifact_name: 错题集生成器.exe
-            asset_name: cuotiji-generator-windows.exe
+            build_name: 错题集生成器-windows
+            final_name: 错题集生成器-windows-x86_64.exe
 
     runs-on: ${{ matrix.os }}
     name: Build for ${{ matrix.name }}
@@ -41,18 +41,20 @@ jobs:
       - name: Build with PyInstaller (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          pyinstaller --onefile --windowed --name="cuotiji-generator" --add-data="ui/icons:ui/icons" main.py
+          pyinstaller --onefile --windowed --name="${{ matrix.build_name }}" --add-data="ui/icons:ui/icons" main.py
+          mv "dist/${{ matrix.build_name }}" "dist/${{ matrix.final_name }}"
 
       - name: Build with PyInstaller (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          pyinstaller --onefile --windowed --name="错题集生成器" --add-data="ui/icons;ui/icons" main.py
+          pyinstaller --onefile --windowed --name="${{ matrix.build_name }}" --add-data="ui/icons;ui/icons" main.py
+          mv "dist/${{ matrix.build_name }}.exe" "dist/${{ matrix.final_name }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.asset_name }}
-          path: dist/${{ matrix.artifact_name }}
+          name: ${{ matrix.final_name }}
+          path: dist/${{ matrix.final_name }}
 
   release:
     needs: build
@@ -63,21 +65,19 @@ jobs:
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
-          name: cuotiji-generator-linux
-          path: ./linux
+          name: 错题集生成器-linux-x86_64.AppImage
+          path: ./artifacts
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: cuotiji-generator-windows.exe
-          path: ./windows
+          name: 错题集生成器-windows-x86_64.exe
+          path: ./artifacts
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            ./linux/cuotiji-generator
-            ./windows/错题集生成器.exe
+          files: ./artifacts/*
           draft: false
           prerelease: false
           generate_release_notes: true
