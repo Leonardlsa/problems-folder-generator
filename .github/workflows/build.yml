@@ -39,7 +39,10 @@ jobs:
         run: |
           python - <<'PY'
           import os
-          import tomllib
+          try:
+              import tomllib
+          except ModuleNotFoundError:
+              import tomli as tomllib
           from pathlib import Path
           from version import APP_VERSION
 
