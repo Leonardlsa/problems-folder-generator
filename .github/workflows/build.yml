@@ -195,8 +195,16 @@ jobs:
             throw "Windows executable is unexpectedly small"
           }
           $hash = (Get-FileHash $artifact -Algorithm SHA256).Hash.ToLower()
-          "$hash  problems-folder-generator-windows-x86_64.exe" |
-            Set-Content -Encoding ascii "$artifact.sha256"
+          $checksum = "$hash  problems-folder-generator-windows-x86_64.exe`n"
+          [System.IO.File]::WriteAllText(
+            "$artifact.sha256",
+            $checksum,
+            [System.Text.UTF8Encoding]::new($false)
+          )
+          $bytes = [System.IO.File]::ReadAllBytes("$artifact.sha256")
+          if ($bytes -contains 13) {
+            throw "Checksum file contains CR characters"
+          }
 
       - name: Build Linux package
         if: matrix.platform == 'linux'
