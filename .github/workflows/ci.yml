@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements*.txt
+
+      - name: Install project and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Check version metadata
+        run: |
+          python - <<'PY'
+          try:
+              import tomllib
+          except ModuleNotFoundError:
+              import tomli as tomllib
+          from pathlib import Path
+          from version import APP_VERSION
+
+          with Path("pyproject.toml").open("rb") as file:
+              project_version = tomllib.load(file)["project"]["version"]
+
+          if project_version != APP_VERSION:
+              raise SystemExit(
+                  f"Version mismatch: version.py={APP_VERSION}, "
+                  f"pyproject.toml={project_version}"
+              )
+          print(f"Version metadata is consistent: {APP_VERSION}")
+          PY
+
+      - name: Compile Python sources
+        run: python -m compileall -q core.py main.py version.py ui tests
+
+      - name: Run tests
+        run: python -m pytest -q

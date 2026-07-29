@@ -1,3 +1,3 @@
-"""Application version."""
+"""Application version metadata."""
 
-__version__ = "3.1.0"
+APP_VERSION = "3.1.0"
