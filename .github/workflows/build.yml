@@ -128,7 +128,7 @@ jobs:
           if-no-files-found: error
 
   executable:
-    name: Build ${{ matrix.display-name }} executable
+    name: Build ${{ matrix.display-name }} package
     needs: test
     runs-on: ${{ matrix.os }}
     permissions:
@@ -138,11 +138,23 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            display-name: Windows
+            platform: windows
+            display-name: Windows x86_64
             artifact-name: windows-x86_64
           - os: ubuntu-latest
-            display-name: Linux
+            platform: linux
+            display-name: Linux x86_64
             artifact-name: linux-x86_64
+          - os: macos-15
+            platform: macos
+            display-name: macOS Apple Silicon
+            artifact-name: macos-arm64
+            arch: arm64
+          - os: macos-15-intel
+            platform: macos
+            display-name: macOS Intel
+            artifact-name: macos-x86_64
+            arch: x86_64
 
     steps:
       - name: Checkout repository
@@ -163,7 +175,7 @@ jobs:
           python -m pip install . pyinstaller
 
       - name: Build Windows executable
-        if: runner.os == 'Windows'
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: |
           pyinstaller `
@@ -171,11 +183,11 @@ jobs:
             --clean `
             --onefile `
             --windowed `
-            --name "错题集生成器-windows-x86_64" `
+            --name "problems-folder-generator-windows-x86_64" `
             --add-data "ui/icons;ui/icons" `
             main.py
 
-          $artifact = "dist/错题集生成器-windows-x86_64.exe"
+          $artifact = "dist/problems-folder-generator-windows-x86_64.exe"
           if (-not (Test-Path $artifact)) {
             throw "Windows executable was not created: $artifact"
           }
@@ -183,11 +195,11 @@ jobs:
             throw "Windows executable is unexpectedly small"
           }
           $hash = (Get-FileHash $artifact -Algorithm SHA256).Hash.ToLower()
-          "$hash  错题集生成器-windows-x86_64.exe" |
+          "$hash  problems-folder-generator-windows-x86_64.exe" |
             Set-Content -Encoding ascii "$artifact.sha256"
 
-      - name: Build Linux executable
-        if: runner.os == 'Linux'
+      - name: Build Linux package
+        if: matrix.platform == 'linux'
         shell: bash
         run: |
           pyinstaller \
@@ -195,34 +207,33 @@ jobs:
             --clean \
             --onefile \
             --windowed \
-            --name "错题集生成器-linux-x86_64" \
+            --name "problems-folder-generator-linux-x86_64" \
             --add-data "ui/icons:ui/icons" \
             main.py
 
-          test -s "dist/错题集生成器-linux-x86_64"
-          test "$(stat -c%s 'dist/错题集生成器-linux-x86_64')" -ge 1000000
-          sha256sum "dist/错题集生成器-linux-x86_64" > \
-            "dist/错题集生成器-linux-x86_64.sha256"
-          tar -C dist -czf "dist/错题集生成器-linux-x86_64.tar.gz" \
-            "错题集生成器-linux-x86_64" \
-            "错题集生成器-linux-x86_64.sha256"
+          binary="dist/problems-folder-generator-linux-x86_64"
+          archive="dist/problems-folder-generator-linux-x86_64.tar.gz"
+          test -s "$binary"
+          test "$(stat -c%s "$binary")" -ge 1000000
+          sha256sum "$binary" > "$binary.sha256"
+          tar -C dist -czf "$archive" \
+            "problems-folder-generator-linux-x86_64" \
+            "problems-folder-generator-linux-x86_64.sha256"
+          sha256sum "$archive" > "$archive.sha256"
+          rm "$binary" "$binary.sha256"
 
-      - name: Upload Windows artifact
-        if: runner.os == 'Windows'
+      - name: Build macOS application and DMG
+        if: matrix.platform == 'macos'
+        shell: bash
+        env:
+          PYTHON: python
+        run: ./scripts/build_macos.sh "${{ matrix.arch }}"
+
+      - name: Upload platform artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-          path: |
-            dist/错题集生成器-windows-x86_64.exe
-            dist/错题集生成器-windows-x86_64.exe.sha256
-          if-no-files-found: error
-
-      - name: Upload Linux artifact
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: dist/错题集生成器-linux-x86_64.tar.gz
+          path: dist/problems-folder-generator-${{ matrix.artifact-name }}*
           if-no-files-found: error
 
   release:

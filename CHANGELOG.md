@@ -9,7 +9,7 @@
 - 输出目录采用 `[科目]学生版` 与 `[科目]教师版`，便于按学生整体打包。
 - 两套图片题号集合一致性和重复题号校验。
 - push/PR 多版本测试 CI。
-- Windows、Linux、wheel、sdist 和 GitHub Release 自动构建。
+- Windows、Linux、macOS（Apple Silicon / Intel）、wheel、sdist 和 GitHub Release 自动构建。
 - 双图片隔离、特殊状态、缺图、追加和备份恢复回归测试。
 
 ### Changed
@@ -19,3 +19,4 @@
 - v3.0 单目录配置自动迁移为学生版目录。
 - 文档保存先写临时文件，再替换正式文件。
 - 版本号统一由 `version.py` 与 `pyproject.toml` 管理。
+- 发布附件改用跨平台稳定的 ASCII 文件名，避免中文文件名在 GitHub Actions 中丢失。

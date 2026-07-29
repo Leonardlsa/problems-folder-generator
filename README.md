@@ -1,17 +1,35 @@
-# 错题集生成器 v3.1
+# 错题集生成器
 
-面向教育培训场景的桌面工具。根据一份 Excel 错题反馈表和两套一一对应的题目图片，一次为每名学生生成学生版与教师版错题集。
+[![CI](https://github.com/Leonardlsa/problems-folder-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/Leonardlsa/problems-folder-generator/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Leonardlsa/problems-folder-generator)](https://github.com/Leonardlsa/problems-folder-generator/releases/latest)
+[![License](https://img.shields.io/github/license/Leonardlsa/problems-folder-generator)](LICENSE)
 
-## v3.1 的核心变化
+根据 Excel 错题反馈表和两套按题号对应的题目图片，一次为每名学生生成**学生版**与**教师版**错题集。
 
-旧版需要分别运行两次，并把科目填写为“物理学生版”和“物理教师版”。v3.1 将这一流程整合为一次操作：
+![错题集生成器主界面](docs/screenshots/main-window-macos.png)
 
-- 选择学生版图片文件夹；
-- 选择教师版图片文件夹；
-- 读取一次错题反馈表；
-- 每位学生同时得到两份结构相同、图片来源不同的文档。
+## 下载
 
-输出结构：
+请从 [GitHub Releases](https://github.com/Leonardlsa/problems-folder-generator/releases/latest) 下载对应平台的安装包：
+
+| 平台 | 文件 |
+|---|---|
+| Windows x86_64 | `problems-folder-generator-windows-x86_64.exe` |
+| macOS Apple Silicon | `problems-folder-generator-macos-arm64.dmg` |
+| macOS Intel | `problems-folder-generator-macos-x86_64.dmg` |
+| Linux x86_64 | `problems-folder-generator-linux-x86_64.tar.gz` |
+
+macOS 安装包目前未使用 Apple Developer 证书签名或公证。首次启动时，请在 Finder 中右键应用并选择“打开”。
+
+## 使用方法
+
+1. 填写科目、班级、日期和周数。
+2. 选择学生版题目图片文件夹。
+3. 选择教师版题目图片文件夹。
+4. 选择 Excel 错题反馈表。
+5. 点击 **GO!**。
+
+程序会在当前工作目录下生成：
 
 ```text
 学生/
@@ -22,35 +40,31 @@
         └── 第3周错题集.docx
 ```
 
-因此可以直接压缩整个学生姓名目录发给家长。
-
-## 功能
-
-- 两套图片按题号严格对应，生成前自动校验；
-- 支持 PNG、JPG、JPEG，文件名使用 `1.png`、`01.png` 等数字格式；
-- 同一目录中重复题号会被拒绝，避免误用图片；
-- 支持普通错题号、`全对`、`未交`、`未带`；
-- 同一周后续日期会追加到已有文档；
-- 每次生成前备份完整 `学生/` 目录，可同时恢复两版；
-- 自动迁移 v3.0 的单图片目录配置和旧备份；
-- 深色/浅色主题、配置记忆和生成日志。
+同一名学生的两版文档放在同一目录中，可以直接压缩该学生目录并发送给家长或教师。
 
 ## 输入格式
 
-### 两套图片
+### 题目图片
 
-两套目录必须具有相同题号，但图片内容可以不同：
+学生版和教师版目录必须包含相同的题号；图片内容可以不同，扩展名也不必一致。
 
 ```text
 学生版图片/                 教师版图片/
 ├── 01.png                  ├── 01.png
 ├── 02.png                  ├── 02.jpg
-└── 03.png                  └── 03.png
+└── 03.jpeg                 └── 03.png
 ```
 
-### 错题反馈表
+要求：
 
-使用 `.xlsx` 文件，第一列为姓名，第二列为错题信息：
+- 支持 PNG、JPG、JPEG；
+- 文件名主体必须是正整数，例如 `1.png`、`01.png`；
+- 同一目录中不能出现重复题号，例如 `1.png` 与 `01.jpg`；
+- 两个目录的题号集合必须完全一致。
+
+### Excel 错题反馈表
+
+使用 `.xlsx` 文件。第一列为学生姓名，第二列为错题信息：
 
 | 姓名 | 错题号 |
 |---|---|
@@ -58,16 +72,28 @@
 | 李四 | 全对 |
 | 王五 | 未交 |
 
-错题号支持中英文逗号或空格分隔。`未交`、`未带`会在两版中插入各自目录的全部题目图片。
+错题号支持中英文逗号或空格分隔。特殊值：
 
-## 安装与运行
+- `全对`：文档中记录“全对”；
+- `未交`、`未带`：两版文档分别插入各自目录中的全部题目图片；
+- 空白：文档中记录“无错题信息”。
 
-要求 Python 3.10+。
+## 数据安全与恢复
+
+- 每次生成前，程序会备份完整的 `学生/` 目录；
+- 点击窗口右上角的恢复按钮，可恢复到上次生成前的状态；
+- 学生版与教师版作为同一个快照备份和恢复；
+- 文档先写入临时文件，再替换正式文件，降低中途失败造成部分文件损坏的风险；
+- 同一周再次生成时，会向已有周文档追加新的日期内容。
+
+## 从源码运行
+
+要求 Python 3.10 或更高版本。
 
 ```bash
 git clone https://github.com/Leonardlsa/problems-folder-generator.git
 cd problems-folder-generator
-python -m venv .venv
+python3 -m venv .venv
 
 # Linux / macOS
 source .venv/bin/activate
@@ -75,49 +101,37 @@ source .venv/bin/activate
 # Windows PowerShell
 # .venv\Scripts\Activate.ps1
 
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python main.py
 ```
 
-## 测试
+## 开发与测试
 
 ```bash
-pip install -e ".[dev]"
-pytest -q
+python -m pip install -e ".[dev]"
+python -m pytest -q
 ```
 
-测试覆盖两套图片隔离、题号对应校验、特殊状态、缺图取消、周内追加、双版本备份恢复和 v3.0 旧备份兼容。
+本项目在 GitHub Actions 中对 Python 3.10、3.11、3.12 运行测试，并自动构建 Windows、Linux、macOS、wheel 与 source distribution 发布产物。
 
-## CI 与发布
-
-- 每次 push 到 `master` 或创建 PR 时，CI 会在 Python 3.10、3.11、3.12 上运行编译检查和测试。
-- 推送 `v*` 标签时，GitHub Actions 会先测试，再构建：
-  - Windows x86_64 单文件 EXE；
-  - Linux x86_64 可执行文件压缩包；
-  - Python wheel 和 source distribution；
-  - SHA-256 校验文件；
-  - GitHub Release。
-
-发布 v3.1：
+macOS 本地打包：
 
 ```bash
-git tag -a v3.1.0 -m "Problems Folder Generator v3.1.0"
-git push origin v3.1.0
+./scripts/build_macos.sh
 ```
+
+版本变更记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 项目结构
 
 ```text
-PFG/
-├── main.py
-├── core.py
-├── version.py
-├── ui/
-├── tests/
-├── .github/workflows/
-├── requirements.txt
-├── requirements-dev.txt
-└── pyproject.toml
+.
+├── main.py                  # GUI 入口
+├── core.py                  # 双版本生成与备份恢复逻辑
+├── ui/                      # PySide6 界面与图标
+├── tests/                   # 回归测试
+├── scripts/                 # 各平台打包脚本
+└── .github/workflows/       # CI 与自动发布
 ```
 
 ## 许可证
@@ -126,4 +140,4 @@ PFG/
 
 ## 致谢
 
-项目初版由 **Leonard** 于 2022 年在 **武汉天任教育** 开发，**Lrj** 参与命令行初版开发。v3.1 恢复并整合了旧版通过“科目学生版/科目教师版”区分两套材料的实际工作流。
+项目初版由 **Leonard** 于 2022 年在 **武汉天任教育** 开发，**Lrj** 参与命令行初版开发。
