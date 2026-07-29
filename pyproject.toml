@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "cuotiji-generator"
 version = "3.1.0"
-description = "错题集生成器 - 一次生成学生版和教师版错题集"
+description = "错题集生成器 - 一次生成每名学生的学生版和教师版"
 readme = "README.md"
 license = "Apache-2.0"
 authors = [
@@ -21,7 +21,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
-    "Pillow>=10.0",
 ]
 
 [project.scripts]
@@ -37,3 +36,8 @@ packages = ["ui"]
 "core.py" = "core.py"
 "main.py" = "main.py"
 "version.py" = "version.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

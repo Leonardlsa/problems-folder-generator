@@ -1,12 +1,17 @@
 # 错题集生成器 v3.1
 
-一款面向教育培训场景的桌面工具，可根据错题反馈表，为每位学生同时生成**学生版**和**教师版**两份错题集。
+面向教育培训场景的桌面工具。根据一份 Excel 错题反馈表和两套一一对应的题目图片，一次为每名学生生成学生版与教师版错题集。
 
-## v3.1 核心变化
+## v3.1 的核心变化
 
-v3.1 恢复并整合了旧版的实际工作流：过去需要将科目分别填写为“物理学生版”和“物理教师版”，切换两套图片并运行两次；现在只需选择两套一一对应的图片文件夹，点击一次即可完成两版生成。
+旧版需要分别运行两次，并把科目填写为“物理学生版”和“物理教师版”。v3.1 将这一流程整合为一次操作：
 
-每名学生的输出结构如下：
+- 选择学生版图片文件夹；
+- 选择教师版图片文件夹；
+- 读取一次错题反馈表；
+- 每位学生同时得到两份结构相同、图片来源不同的文档。
+
+输出结构：
 
 ```text
 学生/
@@ -17,43 +22,24 @@ v3.1 恢复并整合了旧版的实际工作流：过去需要将科目分别填
         └── 第3周错题集.docx
 ```
 
-因此可以直接打包学生姓名目录发给家长。
+因此可以直接压缩整个学生姓名目录发给家长。
 
-## 功能特性
+## 功能
 
-- **双版本同步生成**：同一份反馈表一次生成学生版和教师版
-- **两套图片严格对应**：启动生成前校验两边题号集合是否一致
-- **同结构不同图片**：两版使用相同学生、错题号、日期和排版，只替换图片来源
-- **多科目支持**：数学、物理、化学、生物
-- **特殊状态同步**：`全对`、`未交`、`未带`同时应用于两版
-- **备份恢复**：每次操作前备份完整 `学生` 目录，可同时恢复两版文件
-- **配置记忆**：保存两套图片目录、反馈表、班级、日期和周数
-- **操作日志**：记录两套输入目录和每份文档的生成结果
+- 两套图片按题号严格对应，生成前自动校验；
+- 支持 PNG、JPG、JPEG，文件名使用 `1.png`、`01.png` 等数字格式；
+- 同一目录中重复题号会被拒绝，避免误用图片；
+- 支持普通错题号、`全对`、`未交`、`未带`；
+- 同一周后续日期会追加到已有文档；
+- 每次生成前备份完整 `学生/` 目录，可同时恢复两版；
+- 自动迁移 v3.0 的单图片目录配置和旧备份；
+- 深色/浅色主题、配置记忆和生成日志。
 
-## 快速开始
+## 输入格式
 
-### 环境要求
+### 两套图片
 
-- Python 3.10+
-- Windows / Linux / macOS
-
-### 安装与运行
-
-```bash
-git clone https://github.com/Leonardlsa/problems-folder-generator.git
-cd problems-folder-generator
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-# .venv\Scripts\activate   # Windows
-pip install -r requirements.txt
-python main.py
-```
-
-## 使用说明
-
-### 1. 准备两套题目图片
-
-学生版与教师版图片必须使用相同题号，扩展名可以不同：
+两套目录必须具有相同题号，但图片内容可以不同：
 
 ```text
 学生版图片/                 教师版图片/
@@ -62,60 +48,61 @@ python main.py
 └── 03.png                  └── 03.png
 ```
 
-文件名支持 `1.png`、`01.png`、`01.jpg`、`01.jpeg` 等数字格式。若同一目录内同时出现 `1.png` 和 `01.jpg`，会被视为重复题号并停止生成。
+### 错题反馈表
 
-### 2. 准备错题反馈表
-
-使用 `.xlsx` 文件，第一列为姓名，第二列为错题号：
+使用 `.xlsx` 文件，第一列为姓名，第二列为错题信息：
 
 | 姓名 | 错题号 |
-|------|--------|
+|---|---|
 | 张三 | 1,3,5 |
 | 李四 | 全对 |
 | 王五 | 未交 |
 
-错题号支持：
+错题号支持中英文逗号或空格分隔。`未交`、`未带`会在两版中插入各自目录的全部题目图片。
 
-- 数字列表：`1,3,5`、`1，3，5` 或空格分隔
-- `全对`
-- `未交` / `未带`：两版均插入各自目录中的全部题目图片
+## 安装与运行
 
-### 3. 一次生成两版
+要求 Python 3.10+。
 
-1. 选择科目并填写班级
-2. 输入日期（MMDD）和周数
-3. 分别选择学生版图片目录、教师版图片目录
-4. 选择错题反馈表
-5. 点击 **GO!**
+```bash
+git clone https://github.com/Leonardlsa/problems-folder-generator.git
+cd problems-folder-generator
+python -m venv .venv
 
-程序将输出：
+# Linux / macOS
+source .venv/bin/activate
 
-```text
-学生/[姓名]/[科目]学生版/第X周错题集.docx
-学生/[姓名]/[科目]教师版/第X周错题集.docx
+# Windows PowerShell
+# .venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+python main.py
 ```
-
-若同一周文档已经存在，新日期内容会继续追加到原文档。
 
 ## 测试
 
 ```bash
-pip install -e '.[dev]'
+pip install -e ".[dev]"
 pytest -q
 ```
 
-测试覆盖两版图片隔离、特殊状态、题号对应校验、缺图取消、历史追加和完整目录备份。
+测试覆盖两套图片隔离、题号对应校验、特殊状态、缺图取消、周内追加、双版本备份恢复和 v3.0 旧备份兼容。
 
-## 构建可执行文件
+## CI 与发布
+
+- 每次 push 到 `master` 或创建 PR 时，CI 会在 Python 3.10、3.11、3.12 上运行编译检查和测试。
+- 推送 `v*` 标签时，GitHub Actions 会先测试，再构建：
+  - Windows x86_64 单文件 EXE；
+  - Linux x86_64 可执行文件压缩包；
+  - Python wheel 和 source distribution；
+  - SHA-256 校验文件；
+  - GitHub Release。
+
+发布 v3.1：
 
 ```bash
-pip install pyinstaller
-
-# Windows
-pyinstaller --onefile --windowed --name="错题集生成器" --add-data="ui/icons;ui/icons" main.py
-
-# Linux
-pyinstaller --onefile --windowed --name="cuotiji-generator" --add-data="ui/icons:ui/icons" main.py
+git tag -a v3.1.0 -m "Problems Folder Generator v3.1.0"
+git push origin v3.1.0
 ```
 
 ## 项目结构
@@ -127,9 +114,10 @@ PFG/
 ├── version.py
 ├── ui/
 ├── tests/
+├── .github/workflows/
 ├── requirements.txt
-├── pyproject.toml
-└── LICENSE
+├── requirements-dev.txt
+└── pyproject.toml
 ```
 
 ## 许可证
@@ -138,4 +126,4 @@ PFG/
 
 ## 致谢
 
-项目初版由 **Leonard** 于 2022 年在 **武汉天任教育** 开发，**Lrj** 参与命令行初版开发。v3.1 将旧版通过“科目学生版/教师版”区分两套材料的方式整合为一次生成流程。
+项目初版由 **Leonard** 于 2022 年在 **武汉天任教育** 开发，**Lrj** 参与命令行初版开发。v3.1 恢复并整合了旧版通过“科目学生版/科目教师版”区分两套材料的实际工作流。
