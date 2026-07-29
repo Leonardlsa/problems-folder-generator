@@ -211,16 +211,19 @@ jobs:
             --add-data "ui/icons:ui/icons" \
             main.py
 
-          binary="dist/problems-folder-generator-linux-x86_64"
-          archive="dist/problems-folder-generator-linux-x86_64.tar.gz"
+          binary_name="problems-folder-generator-linux-x86_64"
+          archive_name="problems-folder-generator-linux-x86_64.tar.gz"
+          binary="dist/$binary_name"
           test -s "$binary"
           test "$(stat -c%s "$binary")" -ge 1000000
-          sha256sum "$binary" > "$binary.sha256"
-          tar -C dist -czf "$archive" \
-            "problems-folder-generator-linux-x86_64" \
-            "problems-folder-generator-linux-x86_64.sha256"
-          sha256sum "$archive" > "$archive.sha256"
-          rm "$binary" "$binary.sha256"
+          (
+            cd dist
+            sha256sum "$binary_name" > "$binary_name.sha256"
+            tar -czf "$archive_name" "$binary_name" "$binary_name.sha256"
+            sha256sum "$archive_name" > "$archive_name.sha256"
+            sha256sum -c "$archive_name.sha256"
+            rm "$binary_name" "$binary_name.sha256"
+          )
 
       - name: Build macOS application and DMG
         if: matrix.platform == 'macos'

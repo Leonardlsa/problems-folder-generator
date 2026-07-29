@@ -34,7 +34,8 @@ rm -rf build dist
   main.py
 
 APP_PATH="dist/错题集生成器.app"
-DMG_PATH="dist/problems-folder-generator-macos-${ARCH}.dmg"
+DMG_NAME="problems-folder-generator-macos-${ARCH}.dmg"
+DMG_PATH="dist/${DMG_NAME}"
 
 if [[ ! -d "$APP_PATH" ]]; then
   echo "macOS application bundle was not created: $APP_PATH" >&2
@@ -71,5 +72,9 @@ if [[ "$(stat -f%z "$DMG_PATH")" -lt 1000000 ]]; then
   exit 1
 fi
 
-shasum -a 256 "$DMG_PATH" > "$DMG_PATH.sha256"
+(
+  cd dist
+  shasum -a 256 "$DMG_NAME" > "$DMG_NAME.sha256"
+  shasum -a 256 -c "$DMG_NAME.sha256"
+)
 echo "Created $DMG_PATH"
